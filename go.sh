@@ -1,7 +1,6 @@
 #!/bin/sh
 bundle install
-brew install xctool gcovr
-#pmd
+brew install xctool gcovr pmd sloccount
 brew cask install oclint
 
 xctool -workspace DutyTime.xcworkspace -scheme DutyTime -sdk iphonesimulator -configuration Debug -IDECustomDerivedDataLocation="build/build_ccov" \
@@ -14,3 +13,8 @@ git notes add -f -F build/coverage.txt
 
 oclint-json-compilation-database -e "Pods*" -- -rc LONG_LINE=150 -report-type html -o build/oclint.html
 mv compile_commands.json build
+
+exec pmd cpd --minimum-tokens 100 --language objectivec --format xml --files DutyTime | tee build/cpd.xml
+
+sloccount --duplicates --wide --details DutyTime | grep -v -e '.*ExternalFrameworks.*' | grep objc | tee build/sloc.txt
+
